@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { isElement } from "react-dom/test-utils";
 
 import classes from "./AuthForm.module.css";
 
@@ -24,24 +23,30 @@ const AuthForm = () => {
 
     setIsLoading(true);
 
+    let url;
+
     if (isLogin) {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyC8IDrtHuSd0nlXUf70rLQZmvxiKVVLQuc";
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyC8IDrtHuSd0nlXUf70rLQZmvxiKVVLQuc",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers: { "Content-Type": "application/json" },
-        }
-      ).then((response) => {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyC8IDrtHuSd0nlXUf70rLQZmvxiKVVLQuc";
+    }
+
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        email: enteredEmail,
+        password: enteredPassword,
+        returnSecureToken: true,
+      }),
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => {
         setIsLoading(false);
 
         if (response.ok) {
-          // ...
+          return response.json();
         } else {
           return response.json().then((data) => {
             let errorMessage = "Authenticaton failed!";
@@ -50,11 +55,16 @@ const AuthForm = () => {
             //   errorMessage = data.error.message;
             // }
 
-            alert(errorMessage);
+            throw new Error(errorMessage);
           });
         }
+      })
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        alert(error.message);
       });
-    }
   };
 
   return (
